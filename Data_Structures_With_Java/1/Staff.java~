@@ -1,0 +1,552 @@
+
+
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author ORHAN
+ */
+public class Staff extends LogInClass{
+    final String userName;
+    final String passWord;
+    final String dataBase;
+    
+    /**
+     *
+     * @param username
+     * @param password
+     * @param database
+     * @throws MyException
+     */
+    public Staff(String username,String password,String database) throws MyException{
+        super(username,password,database);////CALLS LOGIN METHOD TO GET PERMISSION
+        this.userName=super.userName;
+        this.passWord=super.passWord;
+        this.dataBase=super.dataBase;
+        Menu();
+    }
+    
+    /**
+     *
+     * @return
+     */
+    @Override
+    public String getUsername() {
+        return userName;
+    }
+
+    /**
+     *
+     * @return
+     */
+    
+    
+    
+    
+    
+    
+    public String getPassword() {
+        return passWord;
+    }
+
+    /**
+     *
+     */
+    public void addBook()throws MyException{////ADD BOOKS TO THE DATABASE
+        
+        System.out.println("Name of the book you want to add");
+        Scanner readInput=new Scanner(System.in);
+        String book=readInput.next();
+   
+        boolean copy=false;
+        try {
+            String line="";
+            FileReader reader;
+            reader = new FileReader("bookDatabase.csv");
+            BufferedReader bookRead;
+            bookRead = new BufferedReader(reader);
+            
+            ArrayList<String> bookList=new ArrayList<>();
+            
+            
+            while((line=bookRead.readLine())!=null){
+                
+                bookList.add(line);
+            }
+            
+            
+            for(int i=0;i<bookList.size();++i){
+                line=bookList.get(i);
+                
+                
+                String [] parted=line.split(",");
+                if(parted[0].equals(book)){
+                    
+                    line=parted[0]+",";
+                    line+=String.valueOf(Integer.parseInt(parted[1])+1);
+                    copy=true;
+                }
+                
+                bookList.set(i, line);
+                
+            }
+            if(!copy){
+                bookList.add(book+",1");
+            }
+            
+           
+            
+           
+               FileWriter fw = new FileWriter("bookDatabase.csv");
+                BufferedWriter bookWriter = new BufferedWriter(fw);
+                
+                for(String x:bookList){
+                    bookWriter.write(x);
+                    bookWriter.newLine();
+                }
+                bookWriter.close();
+                bookRead.close();
+                fw.close();
+                reader.close();
+            
+       
+        } catch (FileNotFoundException ex) {
+            throw new MyException("File not found");
+        } catch (IOException ex) {
+            throw new MyException("IO error");
+        }
+        
+
+    }
+    
+    
+    @Override
+    public void returnBook(String book) throws MyException {//////////////RETURN BOOKS
+        String line="";
+        Boolean found=false;
+        try {
+            FileReader reader;
+            reader = new FileReader("bookDatabase.csv");
+            BufferedReader bookRead;
+            bookRead = new BufferedReader(reader);
+            
+            ArrayList<String> bookList=new ArrayList<>();
+            
+            
+            while((line=bookRead.readLine())!=null){
+                
+                bookList.add(line);
+            }
+            
+            FileReader userReader;
+            userReader = new FileReader(userName+".csv");
+            BufferedReader userRead;
+            userRead = new BufferedReader(userReader);
+            ArrayList<String> usersList;
+            usersList = new ArrayList<>();
+            
+            while((line=userRead.readLine())!=null){
+                String [] parted=line.split(",");
+                if(parted[0].equals(book)){
+                 
+                }
+                else
+                    usersList.add(line);
+            }/////////
+            
+           
+            
+           
+            
+            for(int i=0;i<bookList.size();++i){
+                line=bookList.get(i);
+                
+                
+                String [] parted=line.split(",");
+                if(parted[0].equals(book)){
+                    
+                    line=parted[0]+",";
+                    line+=String.valueOf(Integer.parseInt(parted[1])+1); 
+                    
+                }
+                
+                bookList.set(i, line);
+              
+            }
+            
+            
+            
+            FileWriter fw = new FileWriter("bookDatabase.csv");
+            FileWriter userFW;
+            BufferedWriter userWriter;
+            try  {
+                BufferedWriter bookWriter = new BufferedWriter(fw);
+                userFW = new FileWriter(userName+".csv");
+                userWriter = new BufferedWriter(userFW);
+                for(String x:bookList){
+                    bookWriter.write(x);
+                    bookWriter.newLine();
+                }
+                bookWriter.close();
+                for(String x:usersList){
+                    userWriter.write(x);
+                    userWriter.newLine();
+                }   
+                userWriter.close();
+                
+                fw.close();
+                
+                bookRead.close();
+                reader.close();
+                
+                userFW.close();
+                
+                userRead.close();
+                userReader.close();
+            }catch (IOException ex) {
+                throw new MyException("IO error");
+            }
+        
+        
+        
+    }   catch (IOException ex) {
+            throw new MyException("IO error");
+        }
+    }
+
+    @Override
+     public void borrowBook(String book) throws MyException {
+        String line="";
+        String allLines="";
+        Boolean found=false;
+        try {
+            FileReader reader;
+            reader = new FileReader("bookDatabase.csv");
+            BufferedReader bookRead;
+            bookRead = new BufferedReader(reader);
+            
+            ArrayList<String> bookList=new ArrayList<>();
+           
+            while((line=bookRead.readLine())!=null){
+                
+                bookList.add(line);
+            }
+            
+          
+            
+            FileReader userReader;
+            userReader = new FileReader(userName+".csv");
+            BufferedReader userRead;
+            userRead = new BufferedReader(userReader);
+            
+          
+            
+            while((line=userRead.readLine())!=null) {
+                
+                String [] parted =line.split(",");
+                if(book.equals(parted[0])){
+                    System.out.println("You already have a copy of this book");
+                    userRead.close();
+                    userReader.close();
+                    reader.close();
+                    bookRead.close();
+                    return;
+                }
+                
+                
+            }
+            
+            
+            for(int i=0;i<bookList.size();++i){
+                line=bookList.get(i);
+                String [] parted=line.split(",");
+                if(parted[0].equals(book)){
+                    if(Integer.parseInt(parted[1])>0){
+                        found=true;
+                        line=parted[0]+",";
+                        line+=String.valueOf(Integer.parseInt(parted[1])-1);
+                    }
+                    else{
+                        System.out.println("No more copies left");
+                        userReader.close();
+                        bookRead.close();
+                        return;
+                    }
+                }
+                bookList.set(i, line);
+                
+            }
+     
+            if(!found){
+                System.out.println("Book has not found");
+                userRead.close();
+                userReader.close();
+                bookRead.close();
+                reader.close();
+    
+                return;
+            }
+            else{
+                
+                FileWriter fw = new FileWriter("bookDatabase.csv");
+                try
+                    {
+                    BufferedWriter bookWriter = new BufferedWriter(fw); 
+                    FileWriter userFW = new FileWriter(userName+".csv",true);
+                    BufferedWriter userBR;
+                    userBR = new BufferedWriter(userFW);
+                    
+                    for(String x:bookList){
+                        bookWriter.write(x);
+                        bookWriter.newLine();
+                    }
+                    
+                    userBR.append(book);
+                    userBR.append(",");
+                    userBR.newLine();
+                    
+                    userBR.close();
+                    bookWriter.close();
+                    bookRead.close();
+                    reader.close();
+                    
+                    
+                    userRead.close();
+                    userReader.close();
+                    }
+                catch (IOException ex) {
+                    throw new MyException("IO error");
+                }
+                
+                
+            }   
+            userRead.close();
+            userReader.close();
+            bookRead.close();
+            reader.close();
+     
+        }
+            
+        catch (FileNotFoundException ex) {
+            throw new MyException("File not found error");
+        }
+        catch (IOException ex) {
+            throw new MyException("IO  error");
+        }
+        
+       
+    }
+    
+    /**
+     *
+     * @throws javaapplication7.MyException
+     */
+    @Override
+    public void getBorrowedBooks() throws MyException{//////////LIST OF BORROWED BOOKS
+        try {
+            FileReader userReader;
+            userReader = new FileReader(userName+".csv");
+            BufferedReader userRead;
+            userRead = new BufferedReader(userReader);
+            String line="";
+            
+            while((line=userRead.readLine())!=null){
+                System.out.println(line);
+            }
+                
+            
+            
+            
+            
+        } catch (FileNotFoundException ex) {
+            throw new MyException("File not found error");
+        } catch (IOException ex) {
+            throw new MyException("IO error");
+        }
+        
+        
+    }
+
+    /**
+     *
+     * @throws javaapplication7.MyException
+     */
+    @Override
+    public void Menu() throws MyException{////////MAIN MENU
+        String number="a";
+        while(!number.equals("0")){
+            
+            
+            System.out.println("Enter one of the below");
+            System.out.println("1-Borrow Book");
+            System.out.println("2-Return Book");
+            System.out.println("3-Get the borrowed books list");
+            System.out.println("4-Assign new user");
+            System.out.println("5-Add new books");
+            System.out.println("0-Exit");
+            Scanner reader = new Scanner(System.in);
+            number=reader.next();
+            
+            switch (Integer.parseInt(number) ){
+                case 1: menuBorrow();
+                        break;
+                case 2: menuReturn();
+                        break;
+                case 3: getBorrowedBooks();
+                        break;
+                case 4: assignUser();
+                        break;
+                    
+                case 5:addBook();
+                case 0:break;
+                default:System.out.println("Wrong number.Type 1 or 2 or 0");  
+                        break;
+            }
+        }
+    }
+    
+    /**
+     *
+     * @throws MyException
+		inherited exception
+     */
+    public void menuBorrow() throws MyException{///////////BORROW BOOK MENU
+        try {
+            System.out.println("Type the index of the book you want");
+            System.out.println("or type 0 to go back to main menu");
+            
+            FileReader reader;
+            reader = new FileReader("bookDatabase.csv");
+            BufferedReader bookRead;
+            bookRead = new BufferedReader(reader);
+            
+            ArrayList<String> books=new ArrayList<>();
+            int i=0;
+            String line="";
+            while((line=bookRead.readLine())!=null){
+                
+                String[] parts=line.split(",");
+                books.add(parts[0]);
+                ++i;
+                System.out.println(i+"-"+books.get(i-1));
+                
+            }
+            Scanner IndexReader = new Scanner(System.in);
+            String bookIndex=IndexReader.next();
+            if(bookIndex.equals("0")){
+                
+                reader.close();
+                bookRead.close();
+                return;
+            }
+            reader.close();
+            bookRead.close();   
+            borrowBook(books.get(Integer.parseInt(bookIndex)-1));
+        } catch (FileNotFoundException ex) {
+            throw new MyException("File not found");
+        } catch (IOException ex) {
+            throw new MyException("IO error");
+        }
+    }
+    
+    /**
+     *
+     * @throws javaapplication7.MyException
+     * @throws MyException
+     */
+    public void menuReturn() throws MyException{//////////////////////RETURN BOOK MENU
+        try {
+            System.out.println("Type the index of the book you want to return");
+            System.out.println("or type 0 to go back to main menu");
+            
+            FileReader reader;
+            reader = new FileReader(userName+".csv");
+            BufferedReader bookRead;
+            bookRead = new BufferedReader(reader);
+            ArrayList<String> books=new ArrayList<>();
+            int i=0;
+            String line="";
+            while((line=bookRead.readLine())!=null){
+                
+                String[] parts=line.split(",");
+                books.add(parts[0]);
+                ++i;
+                System.out.println(i+"-"+books.get(i-1));
+                
+            }
+            reader.close();
+            bookRead.close();
+            Scanner IndexReader = new Scanner(System.in);
+            String bookIndex=IndexReader.next();
+            if(bookIndex.equals("0"))
+                return;
+            returnBook(books.get(Integer.parseInt(bookIndex)-1));
+        } catch (FileNotFoundException ex) {
+            throw new MyException("File not found");
+        } catch (IOException ex) {
+            throw new MyException("IO error");
+        }
+    }
+    
+    /**
+     *
+     * @throws javaapplication7.MyException
+     * @throws MyException
+     */
+    public void assignUser() throws MyException {///////////////////ASSIGNS NEW USERS
+        System.out.println("Enter the username you want to assign");
+        Scanner userDatabase;
+        userDatabase=new Scanner("RegularUsers.cvs");
+        
+        Scanner reader;
+        reader = new Scanner(System.in);
+        boolean nameSet=false;
+        while(!nameSet){
+            String user =reader.next();
+            boolean tryAgain=false;
+            while(userDatabase.hasNext()){
+                if(userDatabase.next().equals(user)){
+                    System.out.println("Username has already assigned.");
+                    System.out.println("Try a different name");
+                    userDatabase.close();
+                    tryAgain=true;
+                }
+            }
+            if(!tryAgain){
+                FileWriter userFile;
+                try {
+                    userFile = new FileWriter("RegularUsers.csv",true);
+                    try (BufferedWriter userWriter = new BufferedWriter(userFile)) {
+                        
+                        userWriter.append(user);
+                        userWriter.append(",");
+                        System.out.println("Enter the password you want to use");
+                        userWriter.append(reader.next());
+                        userWriter.newLine();
+                        userWriter.close();
+                    }
+                    userFile.close();
+                    FileWriter file=new FileWriter(user+".csv");
+                    System.out.println("New user has been set");
+                    nameSet=true;
+                } catch (IOException ex) {
+                    throw new MyException("IO error");
+                }
+               
+            }
+        
+            
+        }
+    }
+    
+}

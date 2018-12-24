@@ -1,0 +1,48 @@
+
+/**
+ *
+ * @author ORHAN
+ */
+public interface LibraryInterface {
+    
+    /**
+     *
+     * @param Username
+
+     * @param password
+
+     * @param database
+	which file to access
+     * @throws MyException
+
+     */
+    public void LogIn(String Username,String password,String database)throws MyException;
+
+    
+    public String getUsername();
+
+    
+    
+
+    /**
+     *
+     * @param book
+	book to return
+   
+     */
+    public void returnBook(String book)throws MyException;
+
+    /**
+     *
+     * @param book
+	book to borrow
+ 
+     */
+    public void borrowBook(String book)throws MyException;
+
+    
+    public void getBorrowedBooks()throws MyException;
+
+    
+    void Menu()throws MyException;
+}

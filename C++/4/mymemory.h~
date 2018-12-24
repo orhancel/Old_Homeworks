@@ -1,0 +1,19 @@
+#ifndef MYMEMORY_H
+#define MYMEMORY_H
+
+#include <string>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+class mymemory{
+	public:
+		mymemory();
+		int getMem(int);
+		void setMem(int,int);
+	private:
+		int Mem[100];
+}
+
+#endif

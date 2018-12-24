@@ -1,0 +1,25 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include "memory.h"
+#include <vector>
+using namespace std;
+
+Memory::Memory(int op){
+	option=op;
+}
+
+Memory::Memory():Memory(5){}
+
+void Memory::setMem(int index,int value){
+	Mem[index]=value;
+}
+int &Memory::getMem(int index){
+	return Mem[index];
+}
+void Memory::printAll(){
+	for(int temp=0;temp<50;++temp){
+		cout<<'['<<temp<<']'<<"->"<<Mem[temp]<<endl;
+	}
+}
+

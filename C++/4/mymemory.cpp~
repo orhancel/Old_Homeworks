@@ -1,0 +1,21 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include "mymemory.h"
+
+using namespace std;
+
+mymemory::int getMem(int index){
+	return Mem[index];
+}
+
+mymemory::mymemory(){
+	for(int index=0;index<50;++index)
+		Mem[index]=0;
+}
+
+mymemory::setMem(int index,int value){
+	Mem[index]=value;
+}
+
+		

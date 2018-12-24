@@ -1,0 +1,126 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
+
+/**
+ *
+ * @author ORHAN
+ */
+public class Admin extends Staff{
+    private final String userName;
+    private final String passWord;
+    private final String dataBase;
+
+    /**
+     *
+     * @param username
+     * @param password
+     * @param database
+     * @throws MyException
+     */
+    public Admin(String username, String password, String database) throws MyException {
+        super(username,password,database);
+        this.userName=super.userName;
+        this.passWord=super.passWord;
+        this.dataBase=super.dataBase;
+        Menu();
+    }
+    
+    @Override
+    public void Menu() throws MyException{
+        String number="a";
+        while(!number.equals("0")){
+            
+            
+            System.out.println("Enter one of the below");
+            System.out.println("1-Borrow Book");
+            System.out.println("2-Return Book");
+            System.out.println("3-Get the borrowed books list");
+            System.out.println("4-Assign new staff");
+	System.out.println("5-Assign new user");
+            System.out.println("0-Exit");
+            Scanner reader = new Scanner(System.in);
+            number=reader.next();
+            
+            switch (Integer.parseInt(number) ){
+                case 1: menuBorrow();
+                        break;
+                case 2: menuReturn();
+                        break;
+                case 3: getBorrowedBooks();
+                        break;
+                case 4: assignStaff();
+                        break;
+		case 5: assignUser();
+			break;
+                case 0:break;
+                default:System.out.println("Wrong number.Type 1 or 2 or 0");  
+                        break;
+            }
+        }
+        
+    }
+    
+    /**
+     *
+     * @throws MyException
+     */
+    public void assignStaff() throws MyException {
+        System.out.println("Enter the username you want to assign");
+        Scanner userDatabase;
+        userDatabase=new Scanner("StaffMembers.csv");
+        
+        Scanner reader;
+        reader = new Scanner(System.in);
+        boolean nameSet=false;
+        while(!nameSet){
+            String user =reader.next();
+            boolean tryAgain=false;
+            while(userDatabase.hasNext()){
+                if(userDatabase.next().equals(user)){
+                    System.out.println("Username has already assigned.");
+                    System.out.println("Try a different name");
+                    userDatabase.close();
+                    tryAgain=true;
+                }
+            }
+            if(!tryAgain){
+                FileWriter userFile;
+                try {
+                    userFile = new FileWriter("StaffMembers.csv",true);
+                    try (BufferedWriter userWriter = new BufferedWriter(userFile)) {
+                        
+                        userWriter.newLine();
+                        userWriter.append(user);
+                        userWriter.append(",");
+                        System.out.println("Enter the password you want to use");
+                        userWriter.append(reader.next());
+                        
+                        userWriter.close();
+                    }
+                    userFile.close();
+                    FileWriter file=new FileWriter(user+".csv");
+                    System.out.println("New staff has been set");
+                    nameSet=true;
+                } catch (IOException ex) {
+                    throw new MyException("IO error");
+                }
+               
+            }
+        
+            
+        }
+    }
+    
+    
+    
+    
+}

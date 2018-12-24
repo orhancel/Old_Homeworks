@@ -1,0 +1,6 @@
+make: main.cpp
+	c++ -std=c++11 odev1.cpp -o prog
+
+
+clean:
+	rm *.o prog

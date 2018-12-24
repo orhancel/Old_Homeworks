@@ -1,0 +1,12 @@
+MOV R1, 0  ;
+mov r2, 10  ;
+mov r2, r3 ;
+add r1, r2 ;
+sub r3, 1  ;
+jmp r3, 8  ;
+jmp 4     ;
+sub r2, 1  ;
+jmp r2, 11 ;
+jmp 3  ;
+prn r1 ;
+hlt  ;

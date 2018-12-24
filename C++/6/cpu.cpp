@@ -1,0 +1,814 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include "cpu.h"
+#include "memory.h"
+
+CPU::CPU(int op){//CONTRUCTOR TO GET THE OPTION NUMBER FROM THE USER//
+	int temp=0;
+	option=op;
+	sethalttru();//SET HALT BOOL TRUE//
+	setlineNumber(0);//SET LINE NUMBER OF STRIN ARRAY//
+	for(temp=0;temp<5;temp++)
+		r[temp]=0;//ASSING A NUMBER TO REGISTER ARRAYS//
+
+}
+CPU::CPU(){}
+
+void CPU::print(){//PRINTS ALL OF THE REGISTERS
+	for(int temp=0;temp<5;++temp){
+		cout<<'['<<temp<<']'<<"->"<<r[temp]<<endl;
+	}
+}
+int CPU::getlineNumber(){//GET THE LINE NUMBER OF INSTRUCTION STRING ARRAY//
+	return currLine;
+}
+
+void CPU::setlineNumber(int set){//SET THE LINE NUMBER OF INSTRUCTION STRING ARRAY
+	
+	currLine=set;
+
+}
+
+bool CPU::HLT(){//RETURN HALT CONDITION//
+	return halt;
+}
+
+string CPU::Uppercase(string line,int size){//MAKES THE CHARS UPPER CASE//
+	int imlec=0;
+	for(imlec=0;imlec<size;++imlec)	/*Makes all the chracters in the file upper case*/
+	{				
+		for(i=0; line[i]!='\0' ;i++)
+	 	{   if(line[i]<='z' && line[i]>='a')
+		line[i]=line[i]-('a'-'A');
+	  	}
+
+		
+	}
+	return line;//RETURN THE CHANGED STRING//	
+}
+void CPU::execute(string line,Memory& mymem){//EXECUTE THE INSTRUCTION//
+	int imlec=0;
+	char yedek;
+	int temp=0;
+	
+	if(checksyntax(line)==0){//CHECK FOR ERRORS//
+		
+		cout<<"at line  "<<line<<endl;
+		
+		sethaltfalse();//IF THERE IS AN ERROR,HALT THE PROGRAM//
+		return;
+	}
+	
+	for(imlec=0; line[imlec]!='\0' ;imlec++)//THiS LOOP REMOVES ALL OF THE WHITESPACES//
+   	{	if(line[imlec]!=' ')
+   		{	yedek=line[imlec];
+	   		line[imlec]=' ';
+	  		line[temp]=yedek;
+	 		temp+=1;
+		}
+	}
+	
+	if(option==1)/*DEPENDS OF THE ENTERED OPTION NUMBER,THIS LOOP PRINTS THE INSTRUCTIONS AND REGISTERS*/
+	{	cout << line[0]<<line[1]<<line[2]<<' ';
+		for(imlec=3;line[imlec]!='\0';imlec++)
+		{	
+			if(line[imlec]==';')
+				break;
+			else if(line[imlec]!=',')
+				cout<<line[imlec];
+			else if(line[imlec]==',')
+				cout<<' '<<','<<' ';
+		}
+	cout<<" R1="<<r[0]<<" R2="<<r[1]<<" R3="<<r[2]<<" R4="<<r[3]<<" R5="<<r[4]<<endl;
+		
+	
+	}
+	else if(option==2){//OPTION 2 PRINTS MEMORIES AFTER EACH INSTRUCTION
+		cout << line[0]<<line[1]<<line[2]<<' ';
+		for(imlec=3;line[imlec]!='\0';imlec++)
+		{	
+			if(line[imlec]==';')
+				break;
+			else if(line[imlec]!=',')
+				cout<<line[imlec];
+			else if(line[imlec]==',')
+				cout<<' '<<','<<' ';
+		}
+		cout<<endl;
+		for(temp=0;temp<50;++temp){
+			cout<<"M"<<temp+1<<"="<<mymem.getMem(temp)<<" ";
+			if(temp%10==0 && temp!=0)
+				cout<<endl;
+		}
+		cout<<endl;
+	}
+	if(line[0]=='M' && line[1]=='O' && line[2]=='V')/*WE CALL THESE FUNCTIONS ,ACCORDING TO OUR INSTRUCTIONS*/
+   		move(line,mymem);
+   	else if(line[0]=='A' && line[1]=='D' && line[2]=='D')
+		add(line,mymem);
+	else if(line[0]=='S' && line[1]=='U' && line[2]=='B')
+		sub(line,mymem);
+	else if(line[0]=='J' && line[1]=='M' && line[2]=='P')
+		jump(line);
+	else if(line[0]=='P' && line[1]=='R' && line[2]=='N')
+		print(line,mymem);
+	else if(line[0]=='J' && line[1]=='P' && line[2]=='N')
+		jpn(line);
+	else if(line[0]=='H' && line[1]=='L' && line[2]=='T'){
+		
+		sethaltfalse();
+		HLT();
+	}
+	
+		
+	
+}
+void CPU::firstregister(string line){//REGISTER READING FUNCTION
+	
+	if(line[3]=='R' && line[4]=='1')
+		first=&r[0];//FIRST IS A POINTER
+	else if(line[3]=='R' && line[4]=='2')
+	    	first=&r[1];
+	else if(line[3]=='R' && line[4]=='3')
+		first=&r[2];
+	else if(line[3]=='R' && line[4]=='4')
+	    	first=&r[3];
+	else if(line[3]=='R' && line[4]=='5')
+	    	first=&r[4];
+	
+}
+
+void CPU::move(string line,Memory& mymem)//MOVE INSTRUCTION
+{	
+	int temp=0;
+	int cons=0;
+	int sign=1;/*FOR NEGATIVE NUMBERS*/
+	if(line[3]=='R')//IF THERE IS A REGISTER
+   	{	firstregister(line);//GET THE REGISTER ADDRESS TO A POINTER
+    		i=6;//INCREMENT THE INDEX
+	}
+	else if(line[3]=='#')//IF THERE IS AN ADDRESS
+	{	i=4;//INCREMENT THE INDEX
+		first=&mymem.getMem(constconversion(line));//GET THE ADDRESS OF THE MEMORY ARRAY 
+		
+		i+=1;
+	}
+
+    	if(line[i]=='-')//IF THE NUMBER IS NEGATIVE
+    	{	i+=1;
+    		sign=-1;
+    	}
+	if(line[i]<='9' && line[i]>='0')//IF THERE IS A CONSTANT
+	{	
+		cons=constconversion(line);//CALL CONSTANT CONVERSION FUNCTION
+		
+		*first=cons*sign;//AND ASSIGN IT TO AN ADDRESS OR REGISTER
+		return;
+	}
+		
+	else if(line[i]=='#')
+	{	i+=1;
+		mymem.getMem(constconversion(line))=*first;//ASSIGN IT TO AN ADDRESS
+	}
+
+	else if(line[i]=='R' && line[i+1]=='1')/*MOVE THE FIRST REGISTER OR ADDRESS TO THE RIGHT REGISTER*/
+    		r[0]=*first;
+    		
+    	else if(line[i]=='R' && line[i+1]=='2')
+    		r[1]=*first; 
+    	else if(line[i]=='R' && line[i+1]=='3')
+    		r[2]=*first;
+    	else if(line[i]=='R' && line[i+1]=='4')
+    		r[3]=*first;
+    	else if(line[i]=='R' && line[i+1]=='5')
+    		r[4]=*first;		
+   	
+   	
+}
+
+
+void CPU::add(string line,Memory& mymem)/*FOR ADDING*/
+{
+	
+	int temp=0;
+	int cons=0;	
+	if(line[3]=='R')//CHECK FOR REGISTER
+   	{	firstregister(line);//GET THE REGISTER
+    		i=6;
+		
+	}	
+  	else if(line[3]=='#')//CHECK FOR ADDRESS
+	{	i=4;
+		first=&mymem.getMem(constconversion(line));//GET THE ADDRESS
+		i+=1;
+	}
+	//LEFT SIDE IS DONE
+	//NOW CHECK THE RIGHT SIDE OF COMA
+   	if(line[i]>='0' && line[i]=='9')
+	{
+		*first=*first+constconversion(line);//CONSTANT CONVERSION AND ASSIGN
+		return;
+	}
+		
+	else if(line[i]=='#')//CHECK FOR ADDRESS
+	{	i+=1;
+		mymem.getMem(constconversion(line))+=*first;//ADD IT TO THAT ADDRESS
+	}
+	//IF THE RIGHT SIDE IS REGISTER//
+	
+	if(line[i]=='R' && line[i+1]=='1')//CHECK FOR REGISTERS AND ADD ACCORDINGLY
+    		*first+=r[0];
+    		
+    	else if(line[i]=='R' && line[i+1]=='2')
+    		*first+=r[1];
+    	else if(line[i]=='R' && line[i+1]=='3')
+    		*first+=r[2];
+    	else if(line[i]=='R' && line[i+1]=='4')
+    		first+=r[3];
+    	else if(line[i]=='R' && line[i+1]=='5')
+    		first+=r[4];	
+   	
+}
+
+void CPU::sub(string line,Memory& mymem)//SUBTRACTIN FUNCTION//
+{	//EVERTHING IS SAME AS ADD FUNCTION
+	
+	int temp=0;
+	int cons=0;	
+		
+   	if(line[3]=='R')
+   	{	firstregister(line);
+    		i=6;
+	}	
+  	else if(line[3]=='#')
+	{	i=4;
+		first=&mymem.getMem(constconversion(line));
+		i+=1;
+	}
+   	if(line[i]>='0' && line[i]<='9')
+	{
+		*first=*first-constconversion(line);
+		return;
+	}
+	else if(line[i]=='#')
+	{	i+=1;
+		mymem.getMem(constconversion(line))-=*first;
+	}  
+	else if(line[i]=='R' && line[i+1]=='1')//IF THE RIGHT SIDE IS NOT A CONSTANT,WE CHECK FOR REGISTERS//
+    		*first-=r[0];//AND DO THE SUBRACTION//
+    		
+    	else if(line[i]=='R' && line[i+1]=='2')
+    		*first-=r[1];
+    	else if(line[i]=='R' && line[i+1]=='3')
+    		*first-=r[2];
+    	else if(line[i]=='R' && line[i+1]=='4')
+    		*first-=r[3];
+    	else if(line[i]=='R' && line[i+1]=='5')
+    		*first-=r[4];	
+   		
+}
+
+void CPU::jump(string line)//JUMP FUNCTION//
+{	i=3;//MOVE THE INDEX CURSOR.NO WHITESPACE LEFT IN THE STRING.WE KNOW WHERE TO MOVEIT//
+
+	int temp=0;
+	int cons=0;
+
+	if(line[i]>='0' && line[i]<='9'){	
+		setlineNumber(constconversion(line)-2);//-1 BECAUSE ARRAY[0] İS 1.ANOTHER -1 BECAUSE AFTER CALLING JUMP,LOOP IN THE MAIN WILL INCREMENT 1.WE NEED TO NEGATE IT//
+		return;
+	}
+		
+   	else if(line[i]=='R' && line[i+1]=='1')/*IF THERE IS NO CONSTANT AT INDEX 4,WE CHECK FOR REGISTERS*/	firstregister(line);
+		
+   		
+   	if(*first==0)//IF REGISTER IS 0,THEN JUMP//
+   		
+   	{	i=6;
+		setlineNumber(constconversion(line)-2);
+		return;	
+	}
+}
+void CPU::jpn(string line)//JUMP FUNCTION//
+{	i=3;//MOVE THE INDEX CURSOR.NO WHITESPACE LEFT IN THE STRING.WE KNOW WHERE TO MOVEIT//
+
+	int temp=0;
+	int cons=0;
+
+	if(line[i]>='0' && line[i]<='9'){	
+		setlineNumber(constconversion(line)-2);//-1 BECAUSE ARRAY[0] İS 1.ANOTHER -1 BECAUSE AFTER CALLING JUMP,LOOP IN THE MAIN WILL INCREMENT 1.WE NEED TO NEGATE IT//
+		return;
+	}
+		
+   	else if(line[i]=='R' && line[i+1]=='1')/*IF THERE IS NO CONSTANT AT INDEX 4,WE CHECK FOR REGISTERS*/	firstregister(line);
+		
+   		
+   	if(*first<=0)//IF REGISTER IS 0 or lower,THEN JUMP//
+   		
+   	{	i=6;
+		setlineNumber(constconversion(line)-2);
+		return;	
+	}
+}
+
+void CPU::print(string line,Memory& mymem)//PRINT FUNCTION//
+{	i=3;//MOVE THE INDEX CURSOR.NO WHITESPACE LEFT IN THE STRING.WE KNOW WHERE TO MOVEIT//
+	int temp=0; 
+	int cons=0;
+	
+	if(line[i]>='0' && line[i]<='9'){
+		cout<<constconversion(line)<<endl;//PRINT THE CONSTANT NUMBER//
+		return;	
+	}
+	else if(line[i]=='#'){
+		i+=1;
+		*first=mymem.getMem(constconversion(line));
+	}
+	firstregister(line);
+	cout<<*first<<endl;
+}
+
+int CPU::constconversion(string line){//STRING TO CONSTANT CONVERSION
+	int temp=0;
+	int cons=0;
+	if(line[i]>='0' && line[i]<='9')//STRING TO CONSTANT CONVERSION LOOP//
+	{	temp=-1;
+	
+		while(line[i]>='0' && line[i]<='9')
+		{	
+	   		temp+=1;
+			i+=1;
+		}
+		i=i-temp-1;
+		while(temp>=0)  
+		{	
+			cons=(cons+((line[i]-'0')*sqrt(10,temp)));
+		
+			temp-=1;
+			i+=1;
+		}//END OF LOOP//
+	
+	return cons;
+
+	}
+return 0;
+
+}
+
+int CPU::checksyntax(string line)/*SYNTAX CHECKıNG FUNTÝON*/
+{
+    
+    int temp=0;
+    i=0;
+	if(checkcommand(line)==1)/*Command types has different return values.add,sub,move has 1, jump has 2,halt has 3,print has 4*/
+	{i=i+3;
+		
+		if(checkreg(line)==1)/*checks first THE REGÝSTERS.There has to be a register,not a constant OR ADDRESS*/
+		{	
+			if(checkcoma(line)==1)/*then coma the seperate them , ignores the spaces.*/
+			{	temp=i;
+				
+				if(checkreg(line)==1)/*then another register.But this time it could be a constant*/
+				{
+					if(checkdotcoma(line)==1)/*if it's a register,then we look for semicolon*/
+						return 1;
+					else
+					{	cout<<"Syntax Error1"<<endl;
+						return 0;
+					}
+				}
+			
+				else if(checkcons(line)==2)	/*If we can't find a register,we look for a constant*/
+				{
+				  	if(checkdotcoma(line)==1)	/*	then we look for semicolon*/
+						return 1;
+					else
+					{	cout<<"Syntax Error2"<<endl;
+						return 0;
+					}
+				}
+				setindex(temp);
+				if(checkcons(line)==1)	/*This one is for NEGATIVE NUMBERS.FUNCTION RETURNS 1*/
+				{	
+					if(checkdotcoma(line)==1)//CHECK SEMICOLON//
+						return 1;
+					else
+					{	cout<<"Syntax Error3"<<endl;/*ANYTHING OTHER THAN THAT IS A SYNTAX ERROR*/
+						return 0;
+					}
+				}
+				else
+				{	cout<<"Syntax Error4"<<endl;
+						return 0;
+					}
+			}
+			else
+			{	cout<<"Syntax Error5"<<endl;
+						return 0;
+					}
+		}
+		else
+		{	cout<<"Syntax Error6"<<endl;
+						return 0;
+					}
+	}
+	else if(checkcommand(line)==2)		/*THIS ONE IS FOR JUMP*/
+	{	i=i+4;
+		if(checkreg(line)==1)
+		{	
+			if(checkcoma(line)==1)
+			{	
+				if(checkreg(line)==1)
+				{	if(checkdotcoma(line)==1)
+						return 1;
+					else
+					{	cout<<"Syntax Error7"<<endl;
+						return 0;
+					}
+				}
+				if(checkcons(line)==2)
+				{	if(checkdotcoma(line)==1)
+						return 1;
+					else
+					{	cout<<"Syntax Error8"<<endl;
+						return 0;
+					}
+				}
+				else
+				{	cout<<"Syntax Error9"<<endl;
+						return 0;
+					}
+			}
+			else
+			{	cout<<"Syntax Error10"<<endl;
+						return 0;
+					}
+		}
+		else if(checkcons(line)==2)
+		{	
+		  	if(checkdotcoma(line)==1)
+				return 1;
+			else
+			{	cout<<"Syntax Error11"<<endl;
+					return 0;
+			}
+		}
+		else
+		{	cout<<"Syntax Error12"<<endl;
+			return 0;
+		}
+	}
+	else if(checkcommand(line)==3)	/*THIS ONE IS FOR HALT*/
+	{	i=i+3;
+		if(checkdotcoma(line)==1)
+				return 1;
+		else
+		{	cout<<"Syntax Error13"<<endl;
+			return 0;
+		}
+	}
+	else if(checkcommand(line)==4)	/*THIS ONE IS FOR PRINT.*/
+	{	i=i+4;
+		if(checkreg(line)==1)
+		{	if(checkdotcoma(line)==1)
+				return 1;
+			else 
+			{	cout<<"Syntax Error14"<<endl;
+				return 0;
+			}
+		}
+		else if(checkcons(line)==2)
+		{	if(checkdotcoma(line)==1)
+				return 1;
+			else
+			{	cout<<"Syntax Error15"<<endl;
+				return 0;
+			}
+		}
+		else if(checkhash(line)==1)
+		{
+			if(checkdotcoma(line)==1)
+				return 1;
+			else
+			{	cout<<"Syntax Error15"<<endl;
+				return 0;
+			}
+		}
+		
+		else
+		{	cout<<"Syntax Error16"<<endl;
+			return 0;
+		}
+	}
+	
+	else if(checkcommand(line)==5)/*EMTY LINE*/
+	    return 1;
+	else if(checkcommand(line)==6)/*THÝS ONR ÝS FOR MOVE*/
+		{i=i+3;
+			
+		
+			if(checkreg(line)==1)		/*checks first THE register.*/
+			{	
+				if(checkcoma(line)==1)	/*then coma the seperate them,ignores the spaces.*/
+				{	temp=i;
+					
+					
+					
+					if(checkreg(line)==1)		/*then another register.But this time it could be a constant*/
+					{	
+						if(checkdotcoma(line)==1)/*if it's a register,then we look for semicolon*/
+							return 1;
+						else
+						{	cout<<"Syntax Error17"<<endl;
+							return 0;
+						}
+					}	
+					
+					if(checkhash(line)==1)/*OR WE CHECK FOR ADRESS*/
+					{	
+						if(checkdotcoma(line)==1)
+							return 1;
+						else
+						{	
+							cout<<"Syntax Error20"<<endl;
+							return 0;
+						}
+					}
+					
+					if(checkcons(line)==2)	/*If we can't find a register,we look for a constant*/
+  					{	
+					  	if(checkdotcoma(line)==1)	/*	then we look for semicolon*/
+							return 1;
+						else
+						{	cout<<"Syntax Error18"<<endl;
+							return 0;
+						}
+					}
+					setindex(temp);
+					
+					if(checkcons(line)==1)	/*This one is for NEGATÝVE NUMBERS.FUNCTÝON RETURNS 1*/
+					{	
+						if(checkdotcoma(line)==1)
+							return 1;
+						else
+						{	cout<<"Syntax Error19"<<endl;
+							return 0;
+						}
+					}
+					
+					else
+					{	
+						
+						
+						cout<<"Syntax Error21"<<endl;
+						return 0;
+					}
+				}
+				else
+				{	cout<<"Syntax Error22"<<endl;
+							return 0;
+				}
+			}
+			else if(checkhash(line)==1)/*FÝRST ONE CAN BE AN ADDRESS TOO FOR MOVE ÝNSTRUCTÝON*/
+			{   
+			    if(checkcoma(line)==1)	/*then coma the seperate them,ignores the spaces.*/
+				{	temp=i;
+					
+					if(checkreg(line)==1)		/*then another register.*/
+					{
+						if(checkdotcoma(line)==1)/*if it's a register,then we look for semicolon*/
+							return 1;
+						else
+						{	cout<<"Syntax Error23"<<endl;
+							return 0;
+						}
+					}
+				
+					else if(checkcons(line)==2)	/*If we can't find a register,we look for a constant*/
+  					{
+					  	if(checkdotcoma(line)==1)	/*	then we look for semicolon*/
+							return 1;
+						else
+						{	cout<<"Syntax Error24"<<endl;
+							return 0;
+						}
+					}
+					setindex(temp);
+					if(checkcons(line)==1)	/*This one is for NEGATÝVE NUMBERS.FUNCTÝON RETURNS 1*/
+					{	
+						if(checkdotcoma(line)==1)
+							return 1;
+						else
+						{	cout<<"Syntax Error25"<<endl;
+							return 0;
+						}
+					}
+					else
+					{	cout<<"Syntax Error26"<<endl;
+							return 0;
+					}
+					
+				}
+				else
+				{	cout<<"Syntax Error27"<<endl;
+							return 0;
+				}
+			
+		    }
+		    else
+				{	cout<<"Syntax Error28"<<endl;
+							return 0;
+				}
+		}
+	else
+	{	cout<<"Syntax Error29  "<<endl;
+		return 0;
+	}
+
+return 1;
+
+}
+
+
+	
+int CPU::checkcommand(string line)/*SYNTAX FUNCTION FOR CHECKING COMMAND TYPE.IMLEC IS THE INDEX NUMBER OF THAT LINE*/
+{	int imlec=0;
+	for(i=0;line[imlec]!='\0';i=i+1)
+	{  
+		if(line[imlec]==' ')
+			continue;
+		else if(line[imlec]<='Z' && line[imlec]>='A')
+		{	if(line[imlec]=='M' && line[imlec+1]=='O' && line[imlec+2]=='V' && line[imlec+3]==' ')/*EVERY COMMAND TYPE HAS A DIFFERENT RETURN NUMBER*/
+				return 6;
+			else if(line[imlec]=='A' && line[imlec+1]=='D' && line[imlec+2]=='D' && line[imlec+3]==' ')
+				return 1;
+			else if(line[imlec]=='S' && line[i+1]=='U' && line[i+2]=='B' && line[i+3]==' ')
+				return 1;
+			else if((line[imlec]=='J' && line[imlec+1]=='M' && line[imlec+2]=='P' && line[imlec+3]==' ')||(line[imlec]=='J' && line[imlec+1]=='N' && line[imlec+2]=='P'&& line[imlec+3]==' '))
+				return 2;
+			else if(line[imlec]=='P' && line[imlec+1]=='R' && line[imlec+2]=='N' && line[imlec+3]==' ')
+				return 4;
+			else if(line[imlec]=='H' && line[imlec+1]=='L' && line[imlec+2]=='T' && line[imlec+3]==' ')
+				return 3;
+			else if(line[imlec]=='J' && line[imlec+1]=='P' && line[imlec+2]=='N' && line[imlec+3]==' ')
+				return 2;
+			
+			else
+			    return 0;
+	    }
+		
+		
+	}
+	
+	if(line[imlec]=='\0')/*FOR EMTY LINES*/
+	{    
+	    return 5;
+	}
+		
+	
+	return 0;
+		
+}
+int CPU::checkhash(string line)/*CHECKS SYNTAX FOR ADDRESS*/
+{
+while(line[i]!='\0')/*WHILE IN THE LÝNE*/
+{	
+	if(line[i]==' ')/*I STANDS FOR INDEX*//*IF WE FIND A SPACE,WE JUST SKIP IT*/
+		i+=1;/*UPDATE THE CURSOR,IMLEC*/
+	else if(line[i]=='#')/*IF WE FIND HASH WE START ANOTHER loop*/
+	{	
+		i+=1;/*UPDATE THE INDEX*/
+		
+		while(line[i]<='9' && line[i]>='0')/*WE LOOK AT THE CONSTANTS AFTER THE HASH*/
+		{	
+			if(line[i+1]==' ' || line[i+1]==',' ||  line[i+1]=='\0')/*IF EVERYTHÝNG IS FINE,WE RETURN 1*/			{
+			i+=1;/*UPDATE THE INDEX,IMLEC*/
+			
+			return 1;
+			}
+			else
+			i+=1;/*UPDATE THE CURSOR,IMLEC*/
+		}
+			return 0;
+	}
+	else
+		return 0;
+}
+return 0;
+}
+int CPU::checkreg(string line)/*SYNTAX FUNCTION TO CHECK REGISTERS*/
+{	
+	while(line[i]!='\0')/*WHILE IN LINE*/
+	{	
+		
+		if(line[i]==' ')/*SKIP THE SPACES*/
+			i+=1;/*UPDATE THE INDEX,IMLEC*/
+		else if(line[i]=='R' && line[i+1]<='9' && line[i+1]>='0')/*CHECK FOR R AND A CONSTANT NUMBER*/
+		{	
+			i+=2;/*UPDATE THE INDEX,IMLEC*/
+			return 1;/*RETURN 1 IF EVERYTHING IS FINE*/
+		}
+		else
+		{	
+			return 0;
+		}
+	}
+
+	return 0;	
+}
+
+int CPU::checkcoma(string line)//*SYNTAX FUNCTION TO CHECK COMA*/
+{   
+	while(line[i]!='\0')
+	{   
+		if(line[i]==' ')/*WHILE IN LINE*/
+			{
+			    i+=1;/*UPDATE THE CURSOR,IMLEC*/
+			}
+		else if(line[i]==',' && line[i+1]==' ')/*FIND THE COMA*/
+		{	
+		    i=i+2;/*UPDATE THE CURSOR,IMLEC*/
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	return 0;
+	
+}
+
+int CPU::checkcons(string line)/*SYNTAX FUNCTION TO CHECK CONSTANT NUMBERS*/
+{	
+	while(line[i]!='\0')
+	{	
+		if(line[i]==' ')
+			i+=1;/*UPDATE THE INDEX,IMLEC*/
+		else if(line[i]=='-')/*FOR NEGATIVE ONES*/
+		{	i+=1;/*UPDATE THE INDEX,IMLEC*/
+			
+			while(line[i]<='9' && line[i]>='0')
+				{	
+					if(line[i+1]==' ' || line[i+1]=='\0' || line[i+1]==';')
+					{	i=i+1;/*UPDATE THE CURSOR,IMLEC*/
+						return 1;//RETURN 1 FOR NEGATIVE NUMBERS//
+					}
+					else
+						i+=1;/*UPDATE THE CURSOR,IMLEC*/
+				}
+			return 0;
+		}
+		else if(line[i]<='9' && line[i]>='0')	/*FOR POSITIVE ONES*/
+		{	
+			while(line[i]<='9' && line[i]>='0')
+			{	
+				if(line[i+1]==' ' || line[i+1]=='\0' || line[i+1]==';')
+				{	
+					i=i+1;/*UPDATE THE INDEX,IMLEC*/
+					return 2;//RETURN 2 FOR POSITIVE NUMBERS//
+				}
+				else 
+				{
+					i+=1;/*UPDATE THE INDEX,IMLEC*/
+				}
+			}
+		}
+		else
+		{	
+			return 0;//RETURN 0 FOR ERRORS//
+		}
+				
+	}
+
+	return 0;
+	
+}
+int CPU::checkdotcoma(string line)/*SYNTAX FUNCTION TO CHECK SEMICOLON*/
+{	while(line[i]!='\0')
+	{	
+	    if(line[i]==' ')
+			i+=1;/*UPDATE THE INDEX,IMLEC*/
+		else if(line[i]==';')
+			return 1;
+		else
+		{
+			return 0;
+		}
+	}
+	
+	return 1;
+}	
+int CPU::sqrt(int x,int y)/*POWER FUNCTION*/
+{	int temp=1,sayac=0;
+
+	for(sayac=0;sayac<y;sayac++)
+	{	temp=x*temp;
+	}
+	return temp;
+	
+}
+
+

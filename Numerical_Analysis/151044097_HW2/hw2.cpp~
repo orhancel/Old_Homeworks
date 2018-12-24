@@ -1,0 +1,22 @@
+#include <stdio.h>
+
+#include <math.h>
+#include <cmath>   
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+#define _USE_MATH_DEFINES
+
+int main(){
+	
+
+
+
+
+
+
+}
+
+
+

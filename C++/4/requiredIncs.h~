@@ -1,0 +1,7 @@
+#include <string>
+#include <fstream>
+#include <cstdlib>
+#include "cpu.h"
+#include "cpuprogram.h"
+#include "memory.h"
+#include "computer.h"

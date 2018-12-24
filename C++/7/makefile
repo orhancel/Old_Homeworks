@@ -1,0 +1,17 @@
+all: _mainTester
+
+_mainTester: _mainTester.o BigramDyn.o BigramMap.o 
+	g++ -std=c++11 _mainTester.o BigramDyn.o BigramMap.o -o exe
+
+_mainTester.o: _mainTester.cpp
+	g++ -std=c++11 -c _mainTester.cpp
+
+BigramDyn.o: BigramDyn.cpp
+	g++ -std=c++11 -c BigramDyn.cpp
+
+BigramMap.o: BigramMap.cpp
+	g++ -std=c++11 -c BigramMap.cpp
+
+
+clean:
+	rm *.o exe

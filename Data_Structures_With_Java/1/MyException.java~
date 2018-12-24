@@ -1,0 +1,36 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+/**
+ *
+ * @author ORHAN
+ */
+public class MyException extends Exception{
+    String errorMessege;
+    /**
+     *
+     */
+    public MyException(){
+        errorMessege="An error has occurred";
+    }
+
+    /**
+     *
+     * @param error
+     */
+    public MyException(String error){
+        errorMessege=error;
+    }
+
+    @Override
+    public String getMessage() {
+        return errorMessege; //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+    
+}

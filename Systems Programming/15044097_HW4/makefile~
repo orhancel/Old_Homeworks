@@ -1,0 +1,7 @@
+
+	gcc  main.c -o exe -lpthread
+
+
+
+clean:
+	rm *.o exe
